@@ -9,6 +9,7 @@ import 'screens/home_screen.dart';
 import 'screens/profile_screen.dart';
 import 'screens/scan_report.dart';
 import 'screens/scan_report_placeholder_screen.dart';
+import 'screens/chatbot_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -80,6 +81,7 @@ class _MyAppState extends State<MyApp> {
             ),
         '/scan': (context) => ScanReportScreen(),
         '/scan_placeholder': (context) => const ScanReportPlaceholderScreen(),
+        '/chatbot': (context) => const ChatBotScreen(),
       },
     );
   }

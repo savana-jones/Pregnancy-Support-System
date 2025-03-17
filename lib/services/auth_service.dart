@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:flutter/material.dart';
 
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -59,6 +60,25 @@ class AuthService {
     } catch (e) {
       print("Google Sign-In Error: $e");
       return null;
+    }
+  }
+
+  // Sign out (Email/Password & Google)
+  Future<void> signOut(BuildContext context) async {
+    try {
+      await _auth.signOut();
+      await _googleSignIn.signOut();
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Logged out successfully!')),
+      );
+
+      Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
+    } catch (e) {
+      print("Sign Out Error: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error signing out: $e')),
+      );
     }
   }
 }
