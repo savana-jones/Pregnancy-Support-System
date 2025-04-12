@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:intl/intl.dart';
 import '../services/auth_service.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -25,7 +26,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   bool _isLoading = false;
 
-  // Controllers
+  // Controllers for all text fields
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _ageController = TextEditingController();
   final TextEditingController _weightController = TextEditingController();
@@ -43,7 +44,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   final TextEditingController _partnerNameController = TextEditingController();
   final TextEditingController _addressController = TextEditingController();
 
-  // Dropdown Selections
+  // Dropdown selections
   String? _pregnancyStatus;
   String? _trimester;
   String? _bloodGroup;
@@ -51,6 +52,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
   String? _nutritionPreference;
   bool _smokingAlcohol = false;
 
+  DateTime? _checkupDate;
+  DateTime? _nextCheckupDate;
   DateTime? _dueDate;
   DateTime? _lastMenstrualPeriod;
 
@@ -98,13 +101,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
           _stepsGoalController.text = data['stepsGoal']?.toString() ?? '';
           _partnerNameController.text = data['partnerName']?.toString() ?? '';
           _addressController.text = data['address']?.toString() ?? '';
-          _dueDate = data['dueDate'] != null ? (data['dueDate'] as Timestamp).toDate() : null;
-          _lastMenstrualPeriod = data['lastMenstrualPeriod'] != null ? (data['lastMenstrualPeriod'] as Timestamp).toDate() : null;
+          _dueDate = data['dueDate']?.toDate();
+          _lastMenstrualPeriod = data['lastMenstrualPeriod']?.toDate();
+          _checkupDate = data['checkupDate']?.toDate();
+          _nextCheckupDate = _checkupDate?.add(const Duration(days: 14));
         });
       }
     } catch (e) {
       print("Error loading profile: $e");
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error loading profile')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Error loading profile')),
+      );
     } finally {
       setState(() => _isLoading = false);
     }
@@ -118,6 +125,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
     try {
       final user = _auth.currentUser;
       if (user == null) return;
+
+      // Update next checkup date
+      _nextCheckupDate = _checkupDate?.add(const Duration(days: 14));
 
       await _firestore.collection('users').doc(user.uid).set({
         'name': _nameController.text.trim(),
@@ -144,18 +154,26 @@ class _ProfileScreenState extends State<ProfileScreen> {
         'lastMenstrualPeriod': _lastMenstrualPeriod,
         'partnerName': _partnerNameController.text.trim(),
         'address': _addressController.text.trim(),
+        'checkupDate': _checkupDate,
+        'nextCheckupDate': _nextCheckupDate,
       }, SetOptions(merge: true));
 
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Profile updated!')));
+      // Notifications will be handled automatically by the NotificationService
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Profile updated successfully!')),
+      );
     } catch (e) {
       print("Error saving profile: $e");
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error saving profile')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Error saving profile')),
+      );
     } finally {
       setState(() => _isLoading = false);
     }
   }
 
-  Future<void> _pickDate(BuildContext context, DateTime? initialDate, Function(DateTime) onDateSelected) async {
+  Future<void> _pickDate(BuildContext context, DateTime? initialDate, 
+      Function(DateTime) onDateSelected) async {
     final picked = await showDatePicker(
       context: context,
       initialDate: initialDate ?? DateTime.now(),
@@ -169,7 +187,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Profile'),
+        title: const Text('Profile'),
         centerTitle: true,
         actions: [
           IconButton(
@@ -178,16 +196,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
             tooltip: "Switch Theme",
           ),
           IconButton(
-            icon: Icon(Icons.logout),
+            icon: const Icon(Icons.logout),
             onPressed: () => _authService.signOut(context),
             tooltip: "Logout",
           ),
         ],
       ),
       body: _isLoading
-          ? Center(child: CircularProgressIndicator())
+          ? const Center(child: CircularProgressIndicator())
           : SingleChildScrollView(
-              padding: EdgeInsets.all(16),
+              padding: const EdgeInsets.all(16),
               child: Form(
                 key: _formKey,
                 child: Column(
@@ -195,72 +213,103 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     CircleAvatar(
                       radius: 50,
                       backgroundColor: Colors.grey[300],
-                      child: Icon(Icons.person, size: 50),
+                      child: const Icon(Icons.person, size: 50),
                     ),
-                    SizedBox(height: 20),
-
+                    const SizedBox(height: 20),
                     _buildTextField(_nameController, 'Name'),
-                    _buildTextField(_ageController, 'Age', keyboardType: TextInputType.number),
-                    _buildTextField(_weightController, 'Weight (kg)', keyboardType: TextInputType.number),
-                    _buildTextField(_heightController, 'Height (cm)', keyboardType: TextInputType.number),
-
-                    _buildDropdown('Pregnancy Status', _pregnancyStatus, ['Pregnant', 'Not Pregnant'], (val) {
+                    _buildTextField(_ageController, 'Age',
+                        keyboardType: TextInputType.number),
+                    _buildTextField(_weightController, 'Weight (kg)',
+                        keyboardType: TextInputType.number),
+                    _buildTextField(_heightController, 'Height (cm)',
+                        keyboardType: TextInputType.number),
+                    _buildDropdown('Pregnancy Status', _pregnancyStatus,
+                        ['Pregnant', 'Not Pregnant'], (val) {
                       setState(() => _pregnancyStatus = val);
                     }),
                     if (_pregnancyStatus == 'Pregnant')
-                      _buildDropdown('Trimester', _trimester, ['1st', '2nd', '3rd'], (val) {
+                      _buildDropdown(
+                          'Trimester', _trimester, ['1st', '2nd', '3rd'],
+                          (val) {
                         setState(() => _trimester = val);
                       }),
-
-                    _buildDateField('Due Date', _dueDate, (picked) => setState(() => _dueDate = picked)),
-
-                    _buildDropdown('Blood Group', _bloodGroup, ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'],
+                    _buildDateField('Checkup Date', _checkupDate, (picked) {
+                      setState(() {
+                        _checkupDate = picked;
+                        _nextCheckupDate = picked.add(const Duration(days: 14));
+                      });
+                    }),
+                    if (_nextCheckupDate != null)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 8.0),
+                        child: Text(
+                          'Next Checkup Date: ${DateFormat('MMM dd, yyyy').format(_nextCheckupDate!)}',
+                          style: const TextStyle(fontSize: 16, color: Colors.green),
+                        ),
+                      ),
+                    _buildDateField('Due Date', _dueDate,
+                        (picked) => setState(() => _dueDate = picked)),
+                    _buildDropdown(
+                        'Blood Group',
+                        _bloodGroup,
+                        ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'],
                         (val) => setState(() => _bloodGroup = val)),
-
-                    _buildTextField(_medicalConditionsController, 'Medical Conditions'),
-                    _buildTextField(_allergiesController, 'Allergies (Optional)'),
-
-                    _buildDropdown('Activity Level', _activityLevel, ['Low', 'Moderate', 'High'],
+                    _buildTextField(
+                        _medicalConditionsController, 'Medical Conditions'),
+                    _buildTextField(
+                        _allergiesController, 'Allergies (Optional)'),
+                    _buildDropdown(
+                        'Activity Level',
+                        _activityLevel,
+                        ['Low', 'Moderate', 'High'],
                         (val) => setState(() => _activityLevel = val)),
-
-                    _buildTextField(_sleepHoursController, 'Sleep Hours (per day)', keyboardType: TextInputType.number),
-                    _buildTextField(_waterIntakeController, 'Water Intake Goal (litres/day)', keyboardType: TextInputType.number),
-
-                    _buildDropdown('Nutrition Preference', _nutritionPreference, ['Vegetarian', 'Non-Vegetarian', 'Vegan'],
+                    _buildTextField(
+                        _sleepHoursController, 'Sleep Hours (per day)',
+                        keyboardType: TextInputType.number),
+                    _buildTextField(_waterIntakeController,
+                        'Water Intake Goal (litres/day)',
+                        keyboardType: TextInputType.number),
+                    _buildDropdown(
+                        'Nutrition Preference',
+                        _nutritionPreference,
+                        ['Vegetarian', 'Non-Vegetarian', 'Vegan'],
                         (val) => setState(() => _nutritionPreference = val)),
-
-                    _buildTextField(_emergencyContactNameController, 'Emergency Contact Name'),
-                    _buildTextField(_emergencyContactNumberController, 'Emergency Contact Number', keyboardType: TextInputType.phone),
-
-                    _buildTextField(_doctorNameController, 'Doctor/Consultant Name'),
-                    _buildTextField(_doctorContactController, 'Doctor/Consultant Contact', keyboardType: TextInputType.phone),
-
-                    _buildTextField(_medicationsController, 'Medications (Optional)'),
-
+                    _buildTextField(_emergencyContactNameController,
+                        'Emergency Contact Name'),
+                    _buildTextField(_emergencyContactNumberController,
+                        'Emergency Contact Number',
+                        keyboardType: TextInputType.phone),
+                    _buildTextField(
+                        _doctorNameController, 'Doctor/Consultant Name'),
+                    _buildTextField(
+                        _doctorContactController, 'Doctor/Consultant Contact',
+                        keyboardType: TextInputType.phone),
+                    _buildTextField(
+                        _medicationsController, 'Medications (Optional)'),
                     SwitchListTile(
-                      title: Text('Smoking/Alcohol Use'),
+                      title: const Text('Smoking/Alcohol Use'),
                       value: _smokingAlcohol,
                       onChanged: (val) => setState(() => _smokingAlcohol = val),
                     ),
-
-                    _buildTextField(_stepsGoalController, 'Steps Goal (per day)', keyboardType: TextInputType.number),
-
-                    _buildDateField('Last Menstrual Period', _lastMenstrualPeriod,
-                        (picked) => setState(() => _lastMenstrualPeriod = picked)),
-
-                    _buildTextField(_partnerNameController, 'Partner/Support Person Name (Optional)'),
+                    _buildTextField(
+                        _stepsGoalController, 'Steps Goal (per day)',
+                        keyboardType: TextInputType.number),
+                    _buildDateField(
+                        'Last Menstrual Period',
+                        _lastMenstrualPeriod,
+                        (picked) =>
+                            setState(() => _lastMenstrualPeriod = picked)),
+                    _buildTextField(_partnerNameController,
+                        'Partner/Support Person Name (Optional)'),
                     _buildTextField(_addressController, 'Address (Optional)'),
-
-                    SizedBox(height: 20),
-
+                    const SizedBox(height: 20),
                     ElevatedButton(
                       onPressed: _saveProfile,
-                      child: Text('Save Profile'),
+                      child: const Text('Save Profile'),
                     ),
-
-                    SizedBox(height: 10),
-
-                    Text('App Version 1.0.0', style: TextStyle(color: Colors.grey)),
+                    const SizedBox(height: 10),
+                    const Text('App Version 1.0.0',
+                        style: TextStyle(color: Colors.grey)),
                   ],
                 ),
               ),
@@ -268,7 +317,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildTextField(TextEditingController controller, String labelText, {TextInputType keyboardType = TextInputType.text}) {
+  Widget _buildTextField(TextEditingController controller, String labelText,
+      {TextInputType keyboardType = TextInputType.text}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: TextFormField(
@@ -276,27 +326,32 @@ class _ProfileScreenState extends State<ProfileScreen> {
         keyboardType: keyboardType,
         decoration: InputDecoration(
           labelText: labelText,
-          border: OutlineInputBorder(),
+          border: const OutlineInputBorder(),
         ),
         validator: (value) {
           if (labelText.contains('Optional')) return null;
-          if (value == null || value.trim().isEmpty) return 'Please enter $labelText';
+          if (value == null || value.trim().isEmpty) {
+            return 'Please enter $labelText';
+          }
           return null;
         },
       ),
     );
   }
 
-  Widget _buildDropdown(String label, String? value, List<String> items, Function(String?) onChanged) {
+  Widget _buildDropdown(String label, String? value, List<String> items,
+      Function(String?) onChanged) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: DropdownButtonFormField<String>(
         value: value,
         decoration: InputDecoration(
           labelText: label,
-          border: OutlineInputBorder(),
+          border: const OutlineInputBorder(),
         ),
-        items: items.map((item) => DropdownMenuItem(value: item, child: Text(item))).toList(),
+        items: items
+            .map((item) => DropdownMenuItem(value: item, child: Text(item)))
+            .toList(),
         onChanged: onChanged,
         validator: (val) {
           if (val == null || val.isEmpty) return 'Please select $label';
@@ -306,7 +361,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildDateField(String label, DateTime? date, Function(DateTime) onDateSelected) {
+  Widget _buildDateField(
+      String label, DateTime? date, Function(DateTime) onDateSelected) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: InkWell(
@@ -314,9 +370,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
         child: InputDecorator(
           decoration: InputDecoration(
             labelText: label,
-            border: OutlineInputBorder(),
+            border: const OutlineInputBorder(),
           ),
-          child: Text(date == null ? 'Select Date' : '${date.day}/${date.month}/${date.year}'),
+          child: Text(date == null
+              ? 'Select Date'
+              : DateFormat('MMM dd, yyyy').format(date)),
         ),
       ),
     );

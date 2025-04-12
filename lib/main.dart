@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 
+// Import your notification service here
+import 'screens/notification_service.dart'; 
+
+// Screen imports
 import 'screens/login_screen.dart';
 import 'screens/signup_screen.dart';
 import 'screens/reset_password_screen.dart';
@@ -10,14 +14,19 @@ import 'screens/profile_screen.dart';
 import 'screens/scan_report.dart';
 import 'screens/scan_report_placeholder_screen.dart';
 import 'screens/chatbot_screen.dart';
-
+import 'screens/notification_history_screen.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
+    options: DefaultFirebaseOptions.currentPlatform, // Add this line
   );
+  
+  final notificationService = NotificationService();
+  await notificationService.init();
+  
   runApp(MyApp());
 }
+
 
 class MyApp extends StatefulWidget {
   @override
@@ -82,6 +91,7 @@ class _MyAppState extends State<MyApp> {
         '/scan': (context) => ScanReportScreen(),
         '/scan_placeholder': (context) => const ScanReportPlaceholderScreen(),
         '/chatbot': (context) => const ChatBotScreen(),
+        '/notifications': (context) => NotificationHistoryScreen(),
       },
     );
   }

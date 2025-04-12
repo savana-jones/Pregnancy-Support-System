@@ -67,7 +67,7 @@ class AuthService {
   Future<void> signOut(BuildContext context) async {
     try {
       await _auth.signOut();
-      await _googleSignIn.signOut();
+      await _googleSignIn.signOut();  // Fix: Call _googleSignIn.signOut()
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Logged out successfully!')),

@@ -64,6 +64,7 @@ class DefaultFirebaseOptions {
     messagingSenderId: '903860874588',
     projectId: 'pregnancy-support-system',
     storageBucket: 'pregnancy-support-system.firebasestorage.app',
+    androidClientId: '903860874588-hhu7g5vh4fp3ucbpjoe7m3fltbjltu7l.apps.googleusercontent.com',
     iosClientId: '903860874588-346q8tm6pe7160igm9tq2elfjo9humk3.apps.googleusercontent.com',
     iosBundleId: 'com.example.pregnancySupport',
   );
@@ -74,6 +75,7 @@ class DefaultFirebaseOptions {
     messagingSenderId: '903860874588',
     projectId: 'pregnancy-support-system',
     storageBucket: 'pregnancy-support-system.firebasestorage.app',
+    androidClientId: '903860874588-hhu7g5vh4fp3ucbpjoe7m3fltbjltu7l.apps.googleusercontent.com',
     iosClientId: '903860874588-346q8tm6pe7160igm9tq2elfjo9humk3.apps.googleusercontent.com',
     iosBundleId: 'com.example.pregnancySupport',
   );
@@ -87,4 +89,5 @@ class DefaultFirebaseOptions {
     storageBucket: 'pregnancy-support-system.firebasestorage.app',
     measurementId: 'G-WJ7HPYGEN4',
   );
+
 }
