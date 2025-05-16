@@ -22,7 +22,7 @@ A comprehensive Flutter-based mobile application that supports pregnant individu
 -  **History Screen**  
   View past health alerts, predictions, and chatbot interactions.
 
-## 🛠 Tech Stack
+##  Tech Stack
 
 - **Frontend**: Flutter
 - **Backend**: Firebase (Auth, Firestore, Cloud Functions)
