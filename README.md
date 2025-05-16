@@ -1,16 +1,36 @@
-# pregnancy_support
+#  Pregnancy Support App
 
-A new Flutter project.
+A comprehensive Flutter-based mobile application that supports pregnant individuals through personalized health insights, ML-based pregnancy status prediction, nutrition planning and chatbot assistance. The app integrates with wearable devices and Health Connect to offer real-time tracking and recommendations.
 
-## Getting Started
+##  Features
 
-This project is a starting point for a Flutter application.
+-  **Pregnancy Status Prediction**  
+  ML-based model that predicts pregnancy status based on health data collected via Smart Watch and Health Connect.
 
-A few resources to get you started if this is your first Flutter project:
+-  **Personalized Nutrition Chart**  
+  AI-generated nutrition plans tailored to trimester, medical conditions, and dietary preferences.
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+-  **Chatbot Support**  
+  A built-in chatbot to guide users, schedule appointments, and answer FAQs.
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+-  **Profile Management**  
+  Users can update their pregnancy status, due date, medical history, activity level, and more.
+
+-  **Scheduled Notifications**  
+  Daily/weekly health tips, water reminders, supplement intake, and check-up alerts.
+
+-  **History Screen**  
+  View past health alerts, predictions, and chatbot interactions.
+
+## 🛠 Tech Stack
+
+- **Frontend**: Flutter
+- **Backend**: Firebase (Auth, Firestore, Cloud Functions)
+- **ML Integration**: Python backend or on-device model (TFLite)
+- **IoT Integration**: Samsung Health via Health Connect
+- **Notifications**: Firebase Cloud Messaging (FCM) and local notifications
+
+##  Screenshots
+
+Coming soon...
+
